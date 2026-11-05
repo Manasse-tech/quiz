@@ -1,0 +1,47 @@
+# dependencies
+node_modules
+/.pnp
+.pnp.*
+
+# next.js
+/.next/
+/out/
+/build
+
+# database (SQLite locale)
+db/*
+!db/.gitkeep
+
+# env files
+.env
+.env.*
+!.env.example
+
+# misc
+.DS_Store
+*.pem
+*.log
+dev.log
+server.log
+next-env.d.ts
+*.tsbuildinfo
+
+# sandbox / environnement de dev local
+.zscripts/
+Caddyfile
+download/
+upload/
+skills/
+examples/
+mini-services/
+tests/
+prompt
+local-*
+.claude
+.z-ai-config
+
+# fichiers d'analyse internes
+scripts/analysis/
+
+# vercel
+.vercel

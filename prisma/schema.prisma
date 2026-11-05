@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Candidate {
+  id        String    @id @default(uuid())
+  nom       String
+  prenom    String
+  email     String
+  createdAt DateTime  @default(now())
+  attempts  Attempt[]
+}
+
+model Attempt {
+  id              String         @id @default(uuid())
+  candidateId     String
+  candidate       Candidate      @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  startedAt       DateTime       @default(now())
+  expiresAt       DateTime
+  submittedAt     DateTime?
+  dureeSecondes   Int?
+  bonnesReponses  Int?
+  pourcentage     Int?
+  admis           Boolean?
+  answers         Answer[]
+  proctorEvents   ProctorEvent[]
+}
+
+model Answer {
+  id               String  @id @default(uuid())
+  attemptId        String
+  attempt          Attempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId       String
+  selectedOptionId String
+  createdAt        DateTime @default(now())
+
+  @@unique([attemptId, questionId])
+}
+
+model ProctorEvent {
+  id        String   @id @default(uuid())
+  attemptId String
+  attempt   Attempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  eventType String
+  createdAt DateTime @default(now())
+}
