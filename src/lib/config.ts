@@ -1,4 +1,4 @@
-export const SITE_NAME = "HACKSTUDENT";
+export const SITE_NAME = "HARKSTUDENT";
 
 export const FORMATION_TITLE =
   "Initiation au Pentest Web avec l'Intelligence Artificielle";

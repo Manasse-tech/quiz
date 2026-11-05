@@ -46,8 +46,8 @@ type ResultData = {
   };
 };
 
-const ATTEMPT_KEY = "hackstudent_attempt_id";
-const CANDIDATE_KEY = "hackstudent_candidate_id";
+const ATTEMPT_KEY = "harkstudent_attempt_id";
+const CANDIDATE_KEY = "harkstudent_candidate_id";
 
 function formatDuration(seconds: number) {
   const min = Math.floor(seconds / 60);

@@ -15,7 +15,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Évaluation Pentest Web — HACKSTUDENT",
+  title: "Évaluation Pentest Web — HARKSTUDENT",
   description:
     "Plateforme d'évaluation des connaissances avant la formation « Initiation au Pentest Web avec l'Intelligence Artificielle ».",
 };
