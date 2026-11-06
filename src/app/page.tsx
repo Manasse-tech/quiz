@@ -6,6 +6,7 @@ import { Input } from "@/components/eval/input";
 import { Badge } from "@/components/eval/badge";
 import { ProgressBar } from "@/components/eval/progress";
 import { ShieldLogo } from "@/components/eval/shield";
+import { SplashScreen } from "@/components/eval/splash";
 import {
   SITE_NAME,
   FORMATION_TITLE,
@@ -15,7 +16,7 @@ import {
   WHATSAPP_LINK,
 } from "@/lib/config";
 
-type Screen = "boot" | "register" | "consignes" | "test" | "results";
+type Screen = "intro" | "register" | "consignes" | "test" | "results";
 
 type ClientQuestion = {
   id: string;
@@ -56,7 +57,8 @@ function formatDuration(seconds: number) {
 }
 
 export default function Home() {
-  const [screen, setScreen] = useState<Screen>("boot");
+  const [screen, setScreen] = useState<Screen>("intro");
+  const [bootTarget, setBootTarget] = useState<Screen | null>(null);
 
   // ── Register ──────────────────────────────────────────────────
   const [form, setForm] = useState({ nom: "", prenom: "", email: "" });
@@ -86,11 +88,11 @@ export default function Home() {
   const [result, setResult] = useState<ResultData | null>(null);
   const [resultError, setResultError] = useState("");
 
-  // Boot : reprise de session
+  // Boot : reprise de session (l'intro s'affiche d'abord)
   useEffect(() => {
     const stored = sessionStorage.getItem(ATTEMPT_KEY);
     if (!stored) {
-      setScreen("register");
+      setBootTarget("register");
       return;
     }
     setAttemptId(stored);
@@ -100,11 +102,11 @@ export default function Home() {
         if (data.error) {
           sessionStorage.removeItem(ATTEMPT_KEY);
           sessionStorage.removeItem(CANDIDATE_KEY);
-          setScreen("register");
+          setBootTarget("register");
           return;
         }
         if (data.submitted) {
-          setScreen("results");
+          setBootTarget("results");
           return;
         }
         setQuestions(data.questions);
@@ -114,10 +116,15 @@ export default function Home() {
         setAnswers(saved);
         setLoadingTest(false);
         setAttemptReady(true);
-        setScreen("test");
+        setBootTarget("test");
       })
-      .catch(() => setScreen("register"));
+      .catch(() => setBootTarget("register"));
   }, []);
+
+  // Fin de l'animation d'intro → redirection vers l'écran préparé
+  const handleSplashDone = useCallback(() => {
+    setScreen(bootTarget ?? "register");
+  }, [bootTarget]);
 
   // Inscription
   const handleRegister = async (e: React.FormEvent) => {
@@ -267,13 +274,9 @@ export default function Home() {
       .catch(() => setResultError("Impossible de charger les résultats."));
   }, [screen, attemptId, result]);
 
-  // ── Écran d'amorçage ─────────────────────────────────────────
-  if (screen === "boot") {
-    return (
-      <div className="min-h-dvh flex items-center justify-center">
-        <p className="text-text-muted text-sm">Chargement…</p>
-      </div>
-    );
+  // ── Écran d'intro (animation HARKSTUDENT) ────────────────────
+  if (screen === "intro") {
+    return <SplashScreen onDone={handleSplashDone} />;
   }
 
   // ── Écran 1 : Inscription ─────────────────────────────────────
