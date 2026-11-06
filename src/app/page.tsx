@@ -79,6 +79,8 @@ export default function Home() {
   const [showTabWarning, setShowTabWarning] = useState(false);
   const tabSwitchCount = useRef(0);
   const submittedRef = useRef(false);
+  const pendingAnswerSaves = useRef(new Set<Promise<void>>());
+  const answerQueue = useRef(Promise.resolve());
 
   // ── Résultats ─────────────────────────────────────────────────
   const [result, setResult] = useState<ResultData | null>(null);
@@ -210,11 +212,17 @@ export default function Home() {
   const saveAnswer = useCallback(
     async (questionId: string, selectedOptionId: string) => {
       if (!attemptId) return;
-      await fetch("/api/attempt/answer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ attemptId, questionId, selectedOptionId }),
-      }).catch(() => {});
+      const save = answerQueue.current
+        .then(() => fetch("/api/attempt/answer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ attemptId, questionId, selectedOptionId }),
+        }))
+        .then(() => undefined)
+        .catch(() => undefined);
+      answerQueue.current = save;
+      pendingAnswerSaves.current.add(save);
+      void save.finally(() => pendingAnswerSaves.current.delete(save));
     },
     [attemptId]
   );
@@ -225,6 +233,10 @@ export default function Home() {
     submittedRef.current = true;
     setSubmitting(true);
     try {
+      await Promise.race([
+        Promise.all([...pendingAnswerSaves.current]),
+        new Promise((resolve) => setTimeout(resolve, 2000)),
+      ]);
       const res = await fetch("/api/attempt/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -728,7 +740,7 @@ function TestScreen({
               {questions.map((q, idx) => (
                 <button
                   key={q.id}
-                  onClick={() => setCurrent(idx)}
+                  onClick={() => setCurrent(() => idx)}
                   className={`
                     w-6 h-6 rounded-[var(--radius-sm)] text-[10px] font-medium
                     transition-colors duration-100

@@ -34,8 +34,8 @@ export async function POST(req: NextRequest) {
         Math.round((Date.now() - attempt.startedAt.getTime()) / 1000)
       );
 
-      await db.attempt.update({
-        where: { id: attemptId },
+      const updated = await db.attempt.updateMany({
+        where: { id: attemptId, submittedAt: null },
         data: {
           submittedAt: new Date(),
           dureeSecondes,
@@ -44,10 +44,13 @@ export async function POST(req: NextRequest) {
           admis: pourcentage >= SEUIL_REQUIS,
         },
       });
+      if (updated.count !== 1) {
+        return NextResponse.json({ error: "Tentative déjà soumise" }, { status: 409 });
+      }
     }
 
     return NextResponse.json({ attemptId });
-  } catch {
-    return NextResponse.json({ error: "Une erreur est survenue." }, { status: 500 });
+  } catch (error) {
+      return NextResponse.json({ error: "Erreur lors de la soumission" }, { status: 500 });
   }
 }
