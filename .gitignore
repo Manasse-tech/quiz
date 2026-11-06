@@ -45,3 +45,6 @@ scripts/analysis/
 
 # vercel
 .vercel
+
+# résultats d'outils internes
+tool-results/
